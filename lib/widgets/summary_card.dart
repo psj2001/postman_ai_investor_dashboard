@@ -4,10 +4,7 @@ import '../theme/app_colors.dart';
 class SummaryCard extends StatelessWidget {
   final double totalMRR;
 
-  const SummaryCard({
-    super.key,
-    required this.totalMRR,
-  });
+  const SummaryCard({super.key, required this.totalMRR});
 
   String _formatCurrency(double amount) {
     // Format large numbers with commas for readability
@@ -30,9 +27,7 @@ class SummaryCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppColors.cardRadiusLarge),
-        boxShadow: [
-          AppColors.softShadow,
-        ],
+        boxShadow: [AppColors.softShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,9 +36,10 @@ class SummaryCard extends StatelessWidget {
           Text(
             'Total Monthly Recurring Revenue (MRR)',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: isMobile ? 13 : null,
-                ),
+              color: Colors.white,
+              fontSize: isMobile ? 13 : null,
+              fontWeight: FontWeight.bold,
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -52,34 +48,34 @@ class SummaryCard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
             child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 400),
+              transitionBuilder: (child, animation) {
+                return TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
                   duration: const Duration(milliseconds: 400),
-                  transitionBuilder: (child, animation) {
-                    return TweenAnimationBuilder<double>(
-                      tween: Tween(begin: 0.0, end: 1.0),
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeOut,
-                      builder: (context, value, child) {
-                        return Opacity(
-                          opacity: value,
-                          child: Transform.scale(
-                            scale: 0.8 + (0.2 * value),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: child,
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.scale(
+                        scale: 0.8 + (0.2 * value),
+                        child: child,
+                      ),
                     );
                   },
-                  child: Text(
-                    _formatCurrency(totalMRR),
-                    key: ValueKey(totalMRR),
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: isMobile ? 24 : 32,
-                        ),
-                  ),
+                  child: child,
+                );
+              },
+              child: Text(
+                _formatCurrency(totalMRR),
+                key: ValueKey(totalMRR),
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 24 : 32,
                 ),
+              ),
+            ),
           ),
         ],
       ),

@@ -37,13 +37,13 @@ class _CalculationSectionState extends State<CalculationSection> {
   void initState() {
     super.initState();
     _revenueShareController = TextEditingController(
-      text: widget.revenueSharePercent.toString(),
+      text: widget.revenueSharePercent.toStringAsFixed(4),
     );
     _monthsController = TextEditingController(
       text: widget.monthsSinceLaunch.toString(),
     );
     _equityController = TextEditingController(
-      text: widget.investorEquityPercent.toString(),
+      text: widget.investorEquityPercent.toStringAsFixed(3),
     );
   }
 
@@ -51,13 +51,15 @@ class _CalculationSectionState extends State<CalculationSection> {
   void didUpdateWidget(CalculationSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.revenueSharePercent != oldWidget.revenueSharePercent) {
-      _revenueShareController.text = widget.revenueSharePercent.toString();
+      _revenueShareController.text = widget.revenueSharePercent.toStringAsFixed(
+        4,
+      );
     }
     if (widget.monthsSinceLaunch != oldWidget.monthsSinceLaunch) {
       _monthsController.text = widget.monthsSinceLaunch.toString();
     }
     if (widget.investorEquityPercent != oldWidget.investorEquityPercent) {
-      _equityController.text = widget.investorEquityPercent.toString();
+      _equityController.text = widget.investorEquityPercent.toStringAsFixed(3);
     }
   }
 
@@ -96,14 +98,19 @@ class _CalculationSectionState extends State<CalculationSection> {
   @override
   Widget build(BuildContext context) {
     final pad = widget.isMobile ? 16.0 : 24.0;
+    final inputBorderRadius = BorderRadius.circular(
+      12.0,
+    ); // Added border radius constant
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           padding: EdgeInsets.all(pad),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(AppColors.cardRadiusLarge),
+            border: Border.all(color: AppColors.borderLight, width: 1),
             boxShadow: [AppColors.softShadow],
           ),
           child: Column(
@@ -112,55 +119,158 @@ class _CalculationSectionState extends State<CalculationSection> {
               Text(
                 'Investor Income',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontSize: widget.isMobile ? 17 : null,
-                    ),
+                  fontSize: widget.isMobile ? 17 : null,
+                ),
               ),
               SizedBox(height: widget.isMobile ? 6 : 8),
               Text(
                 'Only 20% of total revenue is distributed to investors.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: widget.isMobile ? 11 : null,
-                    ),
+                  fontSize: widget.isMobile ? 12 : null,
+                  color: AppColors.textPrimary,
+                ),
               ),
-              SizedBox(height: pad),
+              // SizedBox(height: pad),
               if (widget.isMobile)
                 Column(
                   children: [
-                    TextField(
-                      controller: _revenueShareController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d+\.?\d{0,4}'),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Revenue Share %',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        // const SizedBox(height: 8),
+                        TextField(
+                          controller: _revenueShareController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d+\.?\d{0,4}'),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            hintText: '1.3333',
+                            suffix: Text(
+                              '%',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                            // helperText: 'Range: 0.0001% - 10%',
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.white,
+                                width: 2.0,
+                              ),
+                              borderRadius:
+                                  inputBorderRadius, // Applied border radius
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.white,
+                                width: 2.0,
+                              ),
+                              borderRadius:
+                                  inputBorderRadius, // Applied border radius
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.textSecondary,
+                                width: 2.5,
+                              ),
+                              borderRadius:
+                                  inputBorderRadius, // Applied border radius
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                          onChanged: (value) {
+                            final percent = double.tryParse(value) ?? 0.0;
+                            final clampedPercent = percent.clamp(0.0001, 10.0);
+                            if (clampedPercent != percent) {
+                              _revenueShareController.text = clampedPercent
+                                  .toStringAsFixed(4);
+                            }
+                            widget.onRevenueShareChanged(clampedPercent);
+                          },
                         ),
                       ],
-                      decoration: const InputDecoration(
-                        labelText: 'Revenue Share %',
-                        hintText: '1.3333',
-                        suffixText: '%',
-                      ),
-                      onChanged: (value) {
-                        final percent = double.tryParse(value) ?? 0.0;
-                        widget.onRevenueShareChanged(percent);
-                      },
                     ),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller: _monthsController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly,
+
+                    // Months Since Launch Input with label above
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Months Since Launch',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _monthsController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            hintText: '6',
+                            // helperText: 'Range: 1 - 120 months',
+                            border: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.white,
+                                width: 2.0,
+                              ),
+                              borderRadius:
+                                  inputBorderRadius, // Applied border radius
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.white,
+                                width: 2.0,
+                              ),
+                              borderRadius:
+                                  inputBorderRadius, // Applied border radius
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: AppColors.textSecondary,
+                                width: 2.5,
+                              ),
+                              borderRadius:
+                                  inputBorderRadius, // Applied border radius
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 14,
+                            ),
+                          ),
+                          onChanged: (value) {
+                            final months = int.tryParse(value) ?? 0;
+                            final clampedMonths = months.clamp(1, 120);
+                            if (clampedMonths != months) {
+                              _monthsController.text = clampedMonths.toString();
+                            }
+                            widget.onMonthsChanged(clampedMonths);
+                          },
+                        ),
                       ],
-                      decoration: const InputDecoration(
-                        labelText: 'Months Since Launch',
-                        hintText: '6',
-                      ),
-                      onChanged: (value) {
-                        final months = int.tryParse(value) ?? 0;
-                        widget.onMonthsChanged(months);
-                      },
                     ),
                   ],
                 )
@@ -168,43 +278,140 @@ class _CalculationSectionState extends State<CalculationSection> {
                 Row(
                   children: [
                     Expanded(
-                      child: TextField(
-                        controller: _revenueShareController,
-                        keyboardType: const TextInputType.numberWithOptions(
-                          decimal: true,
-                        ),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(
-                            RegExp(r'^\d+\.?\d{0,4}'),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Revenue Share %',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _revenueShareController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                RegExp(r'^\d+\.?\d{0,4}'),
+                              ),
+                            ],
+                            decoration: InputDecoration(
+                              hintText: '1.3333',
+                              suffixText: '%',
+                              // helperText: 'Range: 0.0001% - 10%',
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.white,
+                                  width: 2.0,
+                                ),
+                                borderRadius:
+                                    inputBorderRadius, // Applied border radius
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.white,
+                                  width: 2.0,
+                                ),
+                                borderRadius:
+                                    inputBorderRadius, // Applied border radius
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.textSecondary,
+                                  width: 2.5,
+                                ),
+                                borderRadius:
+                                    inputBorderRadius, // Applied border radius
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              final percent = double.tryParse(value) ?? 0.0;
+                              final clampedPercent = percent.clamp(
+                                0.0001,
+                                10.0,
+                              );
+                              if (clampedPercent != percent) {
+                                _revenueShareController.text = clampedPercent
+                                    .toStringAsFixed(4);
+                              }
+                              widget.onRevenueShareChanged(clampedPercent);
+                            },
                           ),
                         ],
-                        decoration: const InputDecoration(
-                          labelText: 'Revenue Share %',
-                          hintText: '1.3333',
-                          suffixText: '%',
-                        ),
-                        onChanged: (value) {
-                          final percent = double.tryParse(value) ?? 0.0;
-                          widget.onRevenueShareChanged(percent);
-                        },
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: TextField(
-                        controller: _monthsController,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Months Since Launch',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextField(
+                            controller: _monthsController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(
+                              hintText: '6',
+                              // helperText: 'Range: 1 - 120 months',
+                              border: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.white,
+                                  width: 2.0,
+                                ),
+                                borderRadius:
+                                    inputBorderRadius, // Applied border radius
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.white,
+                                  width: 2.0,
+                                ),
+                                borderRadius:
+                                    inputBorderRadius, // Applied border radius
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: AppColors.textSecondary,
+                                  width: 2.5,
+                                ),
+                                borderRadius:
+                                    inputBorderRadius, // Applied border radius
+                              ),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 14,
+                              ),
+                            ),
+                            onChanged: (value) {
+                              final months = int.tryParse(value) ?? 0;
+                              final clampedMonths = months.clamp(1, 120);
+                              if (clampedMonths != months) {
+                                _monthsController.text = clampedMonths
+                                    .toString();
+                              }
+                              widget.onMonthsChanged(clampedMonths);
+                            },
+                          ),
                         ],
-                        decoration: const InputDecoration(
-                          labelText: 'Months Since Launch',
-                          hintText: '6',
-                        ),
-                        onChanged: (value) {
-                          final months = int.tryParse(value) ?? 0;
-                          widget.onMonthsChanged(months);
-                        },
                       ),
                     ),
                   ],
@@ -213,37 +420,60 @@ class _CalculationSectionState extends State<CalculationSection> {
               Container(
                 padding: EdgeInsets.all(widget.isMobile ? 14 : 20),
                 decoration: BoxDecoration(
-                  color: AppColors.sectionBackground,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(AppColors.borderRadius),
                 ),
                 child: Column(
                   children: [
-                    _buildInfoRow(
-                      context,
-                      'Investor Revenue Pool (20%)',
-                      _formatCurrency(_investorRevenuePool),
-                    ),
+                    widget.isMobile
+                        ? _buildMobileInfoRow(
+                            context,
+                            'Investor Revenue Pool (20%)',
+                            _formatCurrency(_investorRevenuePool),
+                          )
+                        : _buildInfoRow(
+                            context,
+                            'Investor Revenue Pool (20%)',
+                            _formatCurrency(_investorRevenuePool),
+                            isMobile: widget.isMobile,
+                          ),
                     SizedBox(height: widget.isMobile ? 10 : 12),
-                    _buildInfoRow(
-                      context,
-                      'Investor Monthly Income',
-                      _formatCurrency(_investorMonthlyIncome),
-                    ),
+                    widget.isMobile
+                        ? _buildMobileInfoRow(
+                            context,
+                            'Investor Monthly Income',
+                            _formatCurrency(_investorMonthlyIncome),
+                          )
+                        : _buildInfoRow(
+                            context,
+                            'Investor Monthly Income',
+                            _formatCurrency(_investorMonthlyIncome),
+                            isMobile: widget.isMobile,
+                          ),
                     SizedBox(height: widget.isMobile ? 12 : 16),
-                    const Divider(),
+                    Divider(color: AppColors.white),
                     SizedBox(height: widget.isMobile ? 12 : 16),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 400),
                       transitionBuilder: (child, animation) {
                         return FadeTransition(opacity: animation, child: child);
                       },
-                      child: _buildInfoRow(
-                        context,
-                        'Total Income Till Date',
-                        _formatCurrency(_totalIncomeTillDate),
-                        isHighlighted: true,
-                        key: ValueKey(_totalIncomeTillDate),
-                      ),
+                      child: widget.isMobile
+                          ? _buildMobileInfoRow(
+                              context,
+                              'Total Income Till Date',
+                              _formatCurrency(_totalIncomeTillDate),
+                              isHighlighted: true,
+                              key: ValueKey(_totalIncomeTillDate),
+                            )
+                          : _buildInfoRow(
+                              context,
+                              'Total Income Till Date',
+                              _formatCurrency(_totalIncomeTillDate),
+                              isHighlighted: true,
+                              isMobile: widget.isMobile,
+                              key: ValueKey(_totalIncomeTillDate),
+                            ),
                     ),
                   ],
                 ),
@@ -255,8 +485,9 @@ class _CalculationSectionState extends State<CalculationSection> {
         Container(
           padding: EdgeInsets.all(pad),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.cardBackground,
             borderRadius: BorderRadius.circular(AppColors.cardRadiusLarge),
+            border: Border.all(color: AppColors.borderLight, width: 1),
             boxShadow: [AppColors.softShadow],
           ),
           child: Column(
@@ -265,64 +496,134 @@ class _CalculationSectionState extends State<CalculationSection> {
               Text(
                 'Valuation & Equity',
                 style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                      fontSize: widget.isMobile ? 17 : null,
-                    ),
+                  fontSize: widget.isMobile ? 17 : null,
+                ),
               ),
               SizedBox(height: widget.isMobile ? 6 : 8),
               Text(
                 'Valuation is based on 5× annual recurring revenue.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      fontSize: widget.isMobile ? 11 : null,
-                    ),
+                  fontSize: widget.isMobile ? 11 : null,
+                  color: AppColors.textPrimary,
+                ),
               ),
-              SizedBox(height: pad),
-              TextField(
-                controller: _equityController,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,4}')),
+              // SizedBox(height: pad),
+              // // Investor Equity Input with label above and yellow outline
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Investor Equity %',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _equityController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d+\.?\d{0,4}'),
+                      ),
+                    ],
+                    decoration: InputDecoration(
+                      hintText: '1.0',
+                      suffixText: '%',
+                      // helperText: 'Range: 0.001% - 50%',
+                      suffixStyle: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppColors.white,
+                          width: 2.0,
+                        ),
+                        borderRadius: inputBorderRadius,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppColors.white,
+                          width: 2.0,
+                        ),
+                        borderRadius: inputBorderRadius,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(
+                          color: AppColors.textSecondary,
+                          width: 2.5,
+                        ),
+                        borderRadius: inputBorderRadius,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                    ),
+                    onChanged: (value) {
+                      final percent = double.tryParse(value) ?? 0.0;
+                      // Clamp equity percentage between 0.001% and 50%
+                      final clampedPercent = percent.clamp(0.001, 50.0);
+                      if (clampedPercent != percent) {
+                        _equityController.text = clampedPercent.toStringAsFixed(
+                          3,
+                        );
+                      }
+                      widget.onEquityPercentChanged(clampedPercent);
+                    },
+                  ),
                 ],
-                decoration: const InputDecoration(
-                  labelText: 'Investor Equity %',
-                  hintText: '1.0',
-                  suffixText: '%',
-                ),
-                onChanged: (value) {
-                  final percent = double.tryParse(value) ?? 0.0;
-                  widget.onEquityPercentChanged(percent);
-                },
               ),
               SizedBox(height: pad),
               Container(
                 padding: EdgeInsets.all(widget.isMobile ? 14 : 20),
                 decoration: BoxDecoration(
-                  color: AppColors.sectionBackground,
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(AppColors.borderRadius),
                 ),
                 child: Column(
                   children: [
-                    _buildInfoRow(
-                      context,
-                      'Company Valuation',
-                      _formatCurrency(_companyValuation),
-                    ),
+                    widget.isMobile
+                        ? _buildMobileInfoRow(
+                            context,
+                            'Company Valuation',
+                            _formatCurrency(_companyValuation),
+                          )
+                        : _buildInfoRow(
+                            context,
+                            'Company Valuation',
+                            _formatCurrency(_companyValuation),
+                            isMobile: widget.isMobile,
+                          ),
                     SizedBox(height: widget.isMobile ? 12 : 16),
-                    const Divider(),
+                    Divider(color: AppColors.white),
                     SizedBox(height: widget.isMobile ? 12 : 16),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 400),
                       transitionBuilder: (child, animation) {
                         return FadeTransition(opacity: animation, child: child);
                       },
-                      child: _buildInfoRow(
-                        context,
-                        'Equity Value',
-                        _formatCurrency(_equityValue),
-                        isHighlighted: true,
-                        key: ValueKey(_equityValue),
-                      ),
+                      child: widget.isMobile
+                          ? _buildMobileInfoRow(
+                              context,
+                              'Equity Value',
+                              _formatCurrency(_equityValue),
+                              isHighlighted: true,
+                              key: ValueKey(_equityValue),
+                            )
+                          : _buildInfoRow(
+                              context,
+                              'Equity Value',
+                              _formatCurrency(_equityValue),
+                              isHighlighted: true,
+                              isMobile: widget.isMobile,
+                              key: ValueKey(_equityValue),
+                            ),
                     ),
                   ],
                 ),
@@ -340,36 +641,35 @@ class _CalculationSectionState extends State<CalculationSection> {
     String value, {
     bool isHighlighted = false,
     Key? key,
+    bool isMobile = false, // Add this parameter
   }) {
     final textStyle = Theme.of(context).textTheme;
-    final labelStyle = textStyle.bodyMedium?.copyWith(
-      color: AppColors.textSecondary,
-      fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
-      fontSize: widget.isMobile ? 13 : null,
-    );
-    final valueStyle = textStyle.titleLarge?.copyWith(
-      color: isHighlighted ? AppColors.accent : AppColors.primary,
-      fontWeight: FontWeight.bold,
-      fontSize: widget.isMobile ? 16 : null,
-    );
 
-    if (widget.isMobile) {
-      return Column(
-        key: key,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label, style: labelStyle),
-          const SizedBox(height: 4),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(value, style: valueStyle),
-          ),
-        ],
-      );
+    // Define font sizes based on highlight status
+    double labelFontSize;
+    double valueFontSize;
+
+    if (isHighlighted) {
+      labelFontSize = widget.isMobile ? 15 : 18;
+      valueFontSize = widget.isMobile ? 20 : 24;
+    } else {
+      labelFontSize = widget.isMobile ? 13 : 15;
+      valueFontSize = widget.isMobile ? 16 : 20;
     }
 
+    final labelStyle = TextStyle(
+      color: AppColors.white,
+      fontWeight: isHighlighted ? FontWeight.w600 : FontWeight.normal,
+      fontSize: labelFontSize,
+    );
+
+    final valueStyle = TextStyle(
+      color: AppColors.white,
+      fontWeight: FontWeight.bold,
+      fontSize: valueFontSize,
+    );
+
+    // Always use Row for both web and mobile
     return Row(
       key: key,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -382,8 +682,64 @@ class _CalculationSectionState extends State<CalculationSection> {
           ),
         ),
         const SizedBox(width: 12),
-        Text(value, style: valueStyle),
+        Flexible(
+          child: Text(value, style: valueStyle, textAlign: TextAlign.right),
+        ),
       ],
     );
   }
+}
+
+Widget _buildMobileInfoRow(
+  BuildContext context,
+  String title,
+  String value, {
+  bool isHighlighted = false,
+  Key? key,
+}) {
+  return Container(
+    key: key,
+    width: double.infinity,
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Title section - wraps to next line if needed
+        Flexible(
+          child: Text(
+            title,
+            style: isHighlighted
+                ? Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w600,
+                  )
+                : Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.white.withOpacity(0.9),
+                  ),
+            maxLines: 2, // Allow title to take up to 2 lines
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        SizedBox(height: 4),
+        // Value section - wraps to next line if needed
+        Flexible(
+          child: Text(
+            value,
+            style: isHighlighted
+                ? Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.bold,
+                  )
+                : Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppColors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+            maxLines: 2, // Allow value to take up to 2 lines
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.left,
+          ),
+        ),
+      ],
+    ),
+  );
 }

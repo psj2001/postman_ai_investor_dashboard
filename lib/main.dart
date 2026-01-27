@@ -1,4 +1,5 @@
- import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_colors.dart';
 import 'widgets/app_nav_bar.dart';
@@ -13,7 +14,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {  
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
@@ -91,13 +92,17 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                 return SingleChildScrollView(
                   child: Padding(
                     padding: EdgeInsets.only(
-                      left: horizontalPadding + MediaQuery.of(context).padding.left,
-                      right: horizontalPadding + MediaQuery.of(context).padding.right,
+                      left:
+                          horizontalPadding +
+                          MediaQuery.of(context).padding.left,
+                      right:
+                          horizontalPadding +
+                          MediaQuery.of(context).padding.right,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: isMobile ? 20 : 48),
+                        SizedBox(height: isMobile ? 10 : 38),
                         _buildHeader(isMobile),
                         SizedBox(height: headingGap),
                         _sectionHeading('Pricing & users', isMobile),
@@ -140,8 +145,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                                 isMobile
                                     ? 'Withdraw'
                                     : 'Withdraw to Bank Account',
-                                style: TextStyle(
-                                    fontSize: isMobile ? 15 : 16),
+                                style: TextStyle(fontSize: isMobile ? 15 : 16),
                               ),
                               style: ElevatedButton.styleFrom(
                                 padding: EdgeInsets.symmetric(
@@ -170,10 +174,10 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
       child: Text(
         text,
         style: Theme.of(context).textTheme.displayMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-              fontSize: isMobile ? 18 : 24,
-            ),
+          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+          fontSize: isMobile ? 18 : 32,
+        ),
         textAlign: TextAlign.center,
       ),
     );
@@ -186,18 +190,18 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
         Text(
           'Investor Revenue Dashboard',
           style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                fontSize: isMobile ? 22 : 32,
-                height: 1.2,
-              ),
+            fontSize: isMobile ? 22 : 32,
+            height: 1.2,
+          ),
         ),
         SizedBox(height: isMobile ? 8 : 12),
         Text(
-          'Understand monthly revenue, income distribution, and company valuation in real time.',
+          'Understand monthly revenue, income distribution, and\ncompany valuation in real time.',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: AppColors.textSecondary,
-                fontSize: isMobile ? 13 : 16,
-                height: 1.45,
-              ),
+            color: AppColors.textPrimary,
+            fontSize: isMobile ? 13 : 16,
+            height: 1.45,
+          ),
         ),
       ],
     );
@@ -212,6 +216,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
           Expanded(
             child: PricingCard(
               title: 'Creators',
+              icon: 'creator.png',
               pricePerUser: 199,
               userCount: creatorsCount,
               onUserCountChanged: (value) {
@@ -223,6 +228,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
           Expanded(
             child: PricingCard(
               title: 'SMEs',
+              icon: 'sme.png',
               pricePerUser: 499,
               userCount: smesCount,
               onUserCountChanged: (value) {
@@ -234,6 +240,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
           Expanded(
             child: PricingCard(
               title: 'Agencies',
+              icon: 'agencies.png',
               pricePerUser: 2999,
               userCount: agenciesCount,
               onUserCountChanged: (value) {
@@ -250,6 +257,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
         children: [
           PricingCard(
             title: 'Creators',
+            icon: 'creator.png',
             pricePerUser: 199,
             userCount: creatorsCount,
             onUserCountChanged: (value) {
@@ -259,6 +267,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
           SizedBox(height: gap),
           PricingCard(
             title: 'SMEs',
+            icon: 'sme.png',
             pricePerUser: 499,
             userCount: smesCount,
             onUserCountChanged: (value) {
@@ -268,6 +277,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
           SizedBox(height: gap),
           PricingCard(
             title: 'Agencies',
+            icon: 'agencies.png',
             pricePerUser: 2999,
             userCount: agenciesCount,
             onUserCountChanged: (value) {

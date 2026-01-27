@@ -4,10 +4,7 @@ import '../theme/app_colors.dart';
 class TotalUsersCard extends StatelessWidget {
   final int totalUsers;
 
-  const TotalUsersCard({
-    super.key,
-    required this.totalUsers,
-  });
+  const TotalUsersCard({super.key, required this.totalUsers});
 
   String _formatNumber(int number) {
     // Format large numbers with commas for readability
@@ -28,11 +25,9 @@ class TotalUsersCard extends StatelessWidget {
       width: double.infinity,
       padding: EdgeInsets.all(pad),
       decoration: BoxDecoration(
-        color: AppColors.accent,
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(AppColors.cardRadiusLarge),
-        boxShadow: [
-          AppColors.softShadow,
-        ],
+        boxShadow: [AppColors.softShadow],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -41,9 +36,10 @@ class TotalUsersCard extends StatelessWidget {
           Text(
             'Total Users',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: isMobile ? 13 : null,
-                ),
+              color: Colors.white,
+              fontSize: isMobile ? 13 : null,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           SizedBox(height: isMobile ? 8 : 12),
           FittedBox(
@@ -72,10 +68,10 @@ class TotalUsersCard extends StatelessWidget {
                 _formatNumber(totalUsers),
                 key: ValueKey(totalUsers),
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: isMobile ? 24 : 32,
-                    ),
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 24 : 32,
+                ),
               ),
             ),
           ),

@@ -13,7 +13,6 @@ class WithdrawDialog extends StatelessWidget {
     required this.equityValue,
   });
 
-  /// Shows a dialog on larger screens or a bottom sheet on mobile.
   static Future<void> show(
     BuildContext context, {
     required double revenueSharePercent,
@@ -28,7 +27,7 @@ class WithdrawDialog extends StatelessWidget {
         backgroundColor: Colors.transparent,
         builder: (ctx) => Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: Color(0xFFF0F3FE),
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: EdgeInsets.only(
@@ -119,8 +118,10 @@ class _WithdrawBody extends StatelessWidget {
     final integerPart = parts[0];
     final decimalPart = parts.length > 1 ? parts[1] : '';
     final regex = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
-    final formattedWithCommas =
-        integerPart.replaceAllMapped(regex, (Match m) => '${m[1]},');
+    final formattedWithCommas = integerPart.replaceAllMapped(
+      regex,
+      (Match m) => '${m[1]},',
+    );
     return 'AED $formattedWithCommas${decimalPart.isNotEmpty ? '.$decimalPart' : ''}';
   }
 
@@ -133,9 +134,9 @@ class _WithdrawBody extends StatelessWidget {
       children: [
         Text(
           'Withdraw to Bank Account',
-          style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                fontSize: isMobile ? 18 : 20,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.displaySmall?.copyWith(fontSize: isMobile ? 18 : 20),
         ),
         SizedBox(height: pad),
         _buildInfoRow(
@@ -150,11 +151,7 @@ class _WithdrawBody extends StatelessWidget {
           _formatCurrency(totalIncomeTillDate),
         ),
         SizedBox(height: isMobile ? 12 : 16),
-        _buildInfoRow(
-          context,
-          'Equity Value',
-          _formatCurrency(equityValue),
-        ),
+        _buildInfoRow(context, 'Equity Value', _formatCurrency(equityValue)),
         SizedBox(height: pad),
         const Divider(),
         SizedBox(height: pad),
@@ -178,9 +175,9 @@ class _WithdrawBody extends StatelessWidget {
                   'This is a demo dashboard.\n'
                   'No real money, banking, or withdrawals are involved.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontSize: isMobile ? 11 : null,
-                      ),
+                    color: AppColors.textSecondary,
+                    fontSize: isMobile ? 11 : null,
+                  ),
                 ),
               ),
             ],
@@ -189,29 +186,22 @@ class _WithdrawBody extends StatelessWidget {
         SizedBox(height: pad),
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
-            onPressed: onClose,
-            child: const Text('Close'),
-          ),
+          child: ElevatedButton(onPressed: onClose, child: const Text('Close')),
         ),
       ],
     );
   }
 
-  Widget _buildInfoRow(
-    BuildContext context,
-    String label,
-    String value,
-  ) {
+  Widget _buildInfoRow(BuildContext context, String label, String value) {
     final labelStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: AppColors.textSecondary,
-          fontSize: isMobile ? 13 : null,
-        );
+      color: AppColors.textSecondary,
+      fontSize: isMobile ? 13 : null,
+    );
     final valueStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: AppColors.textPrimary,
-          fontWeight: FontWeight.bold,
-          fontSize: isMobile ? 14 : null,
-        );
+      color: AppColors.textPrimary,
+      fontWeight: FontWeight.bold,
+      fontSize: isMobile ? 14 : null,
+    );
 
     if (isMobile) {
       return Column(
