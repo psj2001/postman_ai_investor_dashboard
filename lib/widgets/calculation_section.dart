@@ -643,8 +643,6 @@ class _CalculationSectionState extends State<CalculationSection> {
     Key? key,
     bool isMobile = false, // Add this parameter
   }) {
-    final textStyle = Theme.of(context).textTheme;
-
     // Define font sizes based on highlight status
     double labelFontSize;
     double valueFontSize;
@@ -688,58 +686,58 @@ class _CalculationSectionState extends State<CalculationSection> {
       ],
     );
   }
-}
 
-Widget _buildMobileInfoRow(
-  BuildContext context,
-  String title,
-  String value, {
-  bool isHighlighted = false,
-  Key? key,
-}) {
-  return Container(
-    key: key,
-    width: double.infinity,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Title section - wraps to next line if needed
-        Flexible(
-          child: Text(
-            title,
-            style: isHighlighted
-                ? Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w600,
-                  )
+  Widget _buildMobileInfoRow(
+    BuildContext context,
+    String title,
+    String value, {
+    bool isHighlighted = false,
+    Key? key,
+  }) {
+    return SizedBox(
+      key: key,
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Title section - wraps to next line if needed
+          Flexible(
+            child: Text(
+              title,
+              style: isHighlighted
+                  ? Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w600,
+                    )
                 : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.white.withOpacity(0.9),
+                    color: AppColors.white.withValues(alpha: 0.9),
                   ),
-            maxLines: 2, // Allow title to take up to 2 lines
-            overflow: TextOverflow.ellipsis,
+              maxLines: 2, // Allow title to take up to 2 lines
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
-        ),
-        SizedBox(height: 4),
-        // Value section - wraps to next line if needed
-        Flexible(
-          child: Text(
-            value,
-            style: isHighlighted
-                ? Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.bold,
-                  )
-                : Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppColors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-            maxLines: 2, // Allow value to take up to 2 lines
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.left,
+          const SizedBox(height: 4),
+          // Value section - wraps to next line if needed
+          Flexible(
+            child: Text(
+              value,
+              style: isHighlighted
+                  ? Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
+                    )
+                  : Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+              maxLines: 2, // Allow value to take up to 2 lines
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.left,
+            ),
           ),
-        ),
-      ],
-    ),
-  );
+        ],
+      ),
+    );
+  }
 }

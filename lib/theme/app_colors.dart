@@ -47,13 +47,13 @@ class AppColors {
 
   // Shadow with better opacity
   static BoxShadow get softShadow => BoxShadow(
-    color: Colors.black.withOpacity(0.08),
+    color: Colors.black.withValues(alpha: 0.08),
     blurRadius: 16,
     offset: const Offset(0, 4),
   );
 
   static BoxShadow get mediumShadow => BoxShadow(
-    color: Colors.black.withOpacity(0.12),
+    color: Colors.black.withValues(alpha: 0.12),
     blurRadius: 24,
     offset: const Offset(0, 6),
   );
