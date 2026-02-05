@@ -5,19 +5,31 @@ class WithdrawDialog extends StatelessWidget {
   final double revenueSharePercent;
   final double totalIncomeTillDate;
   final double equityValue;
+  final double totalProfitWithdrawnTillDate;
+  final void Function(double amount)? onWithdraw;
+  final void Function(double amount)? onReinvest;
 
   const WithdrawDialog({
     super.key,
     required this.revenueSharePercent,
     required this.totalIncomeTillDate,
     required this.equityValue,
+    this.totalProfitWithdrawnTillDate = 0,
+    this.onWithdraw,
+    this.onReinvest,
   });
+
+  double get withdrawableAmount =>
+      (totalIncomeTillDate - totalProfitWithdrawnTillDate).clamp(0.0, double.infinity);
 
   static Future<void> show(
     BuildContext context, {
     required double revenueSharePercent,
     required double totalIncomeTillDate,
     required double equityValue,
+    double totalProfitWithdrawnTillDate = 0,
+    void Function(double amount)? onWithdraw,
+    void Function(double amount)? onReinvest,
   }) async {
     final isMobile = MediaQuery.of(context).size.width < 600;
     if (isMobile) {
@@ -51,9 +63,12 @@ class WithdrawDialog extends StatelessWidget {
               _WithdrawBody(
                 revenueSharePercent: revenueSharePercent,
                 totalIncomeTillDate: totalIncomeTillDate,
+                totalProfitWithdrawnTillDate: totalProfitWithdrawnTillDate,
                 equityValue: equityValue,
                 isMobile: true,
                 onClose: () => Navigator.of(ctx).pop(),
+                onWithdraw: onWithdraw,
+                onReinvest: onReinvest,
               ),
             ],
           ),
@@ -65,7 +80,10 @@ class WithdrawDialog extends StatelessWidget {
         builder: (ctx) => WithdrawDialog(
           revenueSharePercent: revenueSharePercent,
           totalIncomeTillDate: totalIncomeTillDate,
+          totalProfitWithdrawnTillDate: totalProfitWithdrawnTillDate,
           equityValue: equityValue,
+          onWithdraw: onWithdraw,
+          onReinvest: onReinvest,
         ),
       );
     }
@@ -79,9 +97,12 @@ class WithdrawDialog extends StatelessWidget {
     final body = _WithdrawBody(
       revenueSharePercent: revenueSharePercent,
       totalIncomeTillDate: totalIncomeTillDate,
+      totalProfitWithdrawnTillDate: totalProfitWithdrawnTillDate,
       equityValue: equityValue,
       isMobile: isMobile,
       onClose: () => Navigator.of(context).pop(),
+      onWithdraw: onWithdraw,
+      onReinvest: onReinvest,
     );
 
     return Dialog(
@@ -97,20 +118,37 @@ class WithdrawDialog extends StatelessWidget {
   }
 }
 
-class _WithdrawBody extends StatelessWidget {
+class _WithdrawBody extends StatefulWidget {
   final double revenueSharePercent;
   final double totalIncomeTillDate;
+  final double totalProfitWithdrawnTillDate;
   final double equityValue;
   final bool isMobile;
   final VoidCallback onClose;
+  final void Function(double amount)? onWithdraw;
+  final void Function(double amount)? onReinvest;
 
   const _WithdrawBody({
     required this.revenueSharePercent,
+    required this.totalProfitWithdrawnTillDate,
     required this.totalIncomeTillDate,
     required this.equityValue,
     required this.isMobile,
     required this.onClose,
+    this.onWithdraw,
+    this.onReinvest,
   });
+
+  double get _withdrawableAmount =>
+      (totalIncomeTillDate - totalProfitWithdrawnTillDate).clamp(0.0, double.infinity);
+
+  @override
+  State<_WithdrawBody> createState() => _WithdrawBodyState();
+}
+
+class _WithdrawBodyState extends State<_WithdrawBody> {
+  bool _withdrawn = false;
+  double _amountWithdrawn = 0;
 
   static String _formatCurrency(double amount) {
     final formatted = amount.toStringAsFixed(2);
@@ -127,7 +165,12 @@ class _WithdrawBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pad = isMobile ? 16.0 : 24.0;
+    final pad = widget.isMobile ? 16.0 : 24.0;
+
+    if (_withdrawn) {
+      return _buildSuccessState(context, pad);
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,27 +179,41 @@ class _WithdrawBody extends StatelessWidget {
           'Withdraw to Bank Account',
           style: Theme.of(
             context,
-          ).textTheme.displaySmall?.copyWith(fontSize: isMobile ? 18 : 20),
+          ).textTheme.displaySmall?.copyWith(fontSize: widget.isMobile ? 18 : 20),
         ),
         SizedBox(height: pad),
         _buildInfoRow(
           context,
           'Revenue Share %',
-          '${revenueSharePercent.toStringAsFixed(4)}%',
+          '${widget.revenueSharePercent.toStringAsFixed(4)}%',
         ),
-        SizedBox(height: isMobile ? 12 : 16),
+        SizedBox(height: widget.isMobile ? 12 : 16),
         _buildInfoRow(
           context,
           'Total Income Till Date',
-          _formatCurrency(totalIncomeTillDate),
+          _formatCurrency(widget.totalIncomeTillDate),
         ),
-        SizedBox(height: isMobile ? 12 : 16),
-        _buildInfoRow(context, 'Equity Value', _formatCurrency(equityValue)),
+        if (widget.totalProfitWithdrawnTillDate > 0) ...[
+          SizedBox(height: widget.isMobile ? 12 : 16),
+          _buildInfoRow(
+            context,
+            'Already withdrawn',
+            _formatCurrency(widget.totalProfitWithdrawnTillDate),
+          ),
+        ],
+        SizedBox(height: widget.isMobile ? 12 : 16),
+        _buildInfoRow(
+          context,
+          'Total Withdrawable Amount till date',
+          _formatCurrency(widget._withdrawableAmount),
+        ),
+        SizedBox(height: widget.isMobile ? 12 : 16),
+        _buildInfoRow(context, 'Equity Value', _formatCurrency(widget.equityValue)),
         SizedBox(height: pad),
         const Divider(),
         SizedBox(height: pad),
         Container(
-          padding: EdgeInsets.all(isMobile ? 12 : 16),
+          padding: EdgeInsets.all(widget.isMobile ? 12 : 16),
           decoration: BoxDecoration(
             color: AppColors.sectionBackground,
             borderRadius: BorderRadius.circular(AppColors.borderRadius),
@@ -167,7 +224,7 @@ class _WithdrawBody extends StatelessWidget {
               Icon(
                 Icons.info_outline,
                 color: AppColors.textSecondary,
-                size: isMobile ? 18 : 20,
+                size: widget.isMobile ? 18 : 20,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -176,7 +233,7 @@ class _WithdrawBody extends StatelessWidget {
                   'No real money, banking, or withdrawals are involved.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
-                    fontSize: isMobile ? 11 : null,
+                    fontSize: widget.isMobile ? 11 : null,
                   ),
                 ),
               ),
@@ -186,7 +243,77 @@ class _WithdrawBody extends StatelessWidget {
         SizedBox(height: pad),
         SizedBox(
           width: double.infinity,
-          child: ElevatedButton(onPressed: onClose, child: const Text('Close')),
+          child: ElevatedButton(
+            onPressed: widget._withdrawableAmount <= 0
+                ? null
+                : () {
+                    final amount = widget._withdrawableAmount;
+                    setState(() {
+                      _withdrawn = true;
+                      _amountWithdrawn = amount;
+                    });
+                    widget.onWithdraw?.call(amount);
+                  },
+            child: const Text('Withdraw'),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSuccessState(BuildContext context, double pad) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Withdraw',
+          style: Theme.of(context).textTheme.displaySmall?.copyWith(
+            fontSize: widget.isMobile ? 18 : 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: pad),
+        Container(
+          padding: EdgeInsets.all(widget.isMobile ? 14 : 18),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(AppColors.borderRadius),
+            border: Border.all(color: Colors.green.shade200),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green.shade700, size: widget.isMobile ? 22 : 26),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Successfully credited to your bank account.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.green.shade900,
+                    fontWeight: FontWeight.w500,
+                    fontSize: widget.isMobile ? 14 : 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (_amountWithdrawn > 0) ...[
+          SizedBox(height: pad),
+          _buildInfoRow(
+            context,
+            'Amount withdrawn',
+            _formatCurrency(_amountWithdrawn),
+          ),
+        ],
+        SizedBox(height: pad),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: widget.onClose,
+            child: const Text('Close'),
+          ),
         ),
       ],
     );
@@ -195,15 +322,15 @@ class _WithdrawBody extends StatelessWidget {
   Widget _buildInfoRow(BuildContext context, String label, String value) {
     final labelStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(
       color: AppColors.textSecondary,
-      fontSize: isMobile ? 13 : null,
+      fontSize: widget.isMobile ? 13 : null,
     );
     final valueStyle = Theme.of(context).textTheme.titleMedium?.copyWith(
       color: AppColors.textPrimary,
       fontWeight: FontWeight.bold,
-      fontSize: isMobile ? 14 : null,
+      fontSize: widget.isMobile ? 14 : null,
     );
 
-    if (isMobile) {
+    if (widget.isMobile) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,

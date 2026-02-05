@@ -58,13 +58,38 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
   double get companyValuation => totalMRR * 12 * 5;
   double get equityValue => companyValuation * (investorEquityPercent / 100);
 
+  // Total profit amount withdrawn till date (for demo, can be wired to real data)
+  double totalProfitWithdrawnTillDate = 0.0;
+
   void _showWithdrawDialog() {
     WithdrawDialog.show(
       context,
       revenueSharePercent: revenueSharePercent,
       totalIncomeTillDate: totalIncomeTillDate,
+      totalProfitWithdrawnTillDate: totalProfitWithdrawnTillDate,
       equityValue: equityValue,
+      onWithdraw: (amount) {
+        setState(() => totalProfitWithdrawnTillDate += amount);
+      },
+      onReinvest: (amount) {
+        setState(() {
+          totalProfitWithdrawnTillDate =
+              (totalProfitWithdrawnTillDate - amount).clamp(0.0, double.infinity);
+        });
+      },
     );
+  }
+
+  void _reinvestAll() {
+    // Reinvest is only enabled when nothing has been withdrawn (totalProfitWithdrawnTillDate <= 0)
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your income is reinvested.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
@@ -133,25 +158,56 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                         SizedBox(height: sectionSpacing),
                         Center(
                           child: SizedBox(
-                            width: isLargeScreen ? 400 : double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: _showWithdrawDialog,
-                              icon: Icon(
-                                Icons.arrow_forward,
-                                size: isMobile ? 18 : 20,
-                              ),
-                              label: Text(
-                                isMobile
-                                    ? 'Withdraw'
-                                    : 'Withdraw to Bank Account',
-                                style: TextStyle(fontSize: isMobile ? 15 : 16),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(
-                                  vertical: isMobile ? 16 : 20,
+                            width: isLargeScreen ? 500 : double.infinity,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: _showWithdrawDialog,
+                                    icon: Icon(
+                                      Icons.arrow_forward,
+                                      size: isMobile ? 18 : 20,
+                                    ),
+                                    label: Text(
+                                      isMobile
+                                          ? 'Withdraw'
+                                          : 'Withdraw to Bank Account',
+                                      style:
+                                          TextStyle(fontSize: isMobile ? 15 : 16),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: isMobile ? 16 : 20,
+                                      ),
+                                      minimumSize: Size(0, isMobile ? 48 : 52),
+                                    ),
+                                  ),
                                 ),
-                                minimumSize: Size(0, isMobile ? 48 : 52),
-                              ),
+                                SizedBox(width: isMobile ? 12 : 16),
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    onPressed: totalProfitWithdrawnTillDate <= 0
+                                        ? _reinvestAll
+                                        : null,
+                                    icon: Icon(
+                                      Icons.replay,
+                                      size: isMobile ? 18 : 20,
+                                    ),
+                                    label: Text(
+                                      'Reinvest',
+                                      style:
+                                          TextStyle(fontSize: isMobile ? 15 : 16),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: isMobile ? 16 : 20,
+                                      ),
+                                      minimumSize: Size(0, isMobile ? 48 : 52),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
