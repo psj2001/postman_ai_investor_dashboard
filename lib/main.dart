@@ -7,7 +7,7 @@ import 'widgets/summary_card.dart';
 import 'widgets/total_users_card.dart';
 import 'widgets/calculation_section.dart';
 import 'widgets/highlight_cards.dart';
-import 'widgets/withdraw_dialog.dart';
+import 'widgets/withdraw_dialog.dart' show WithdrawDialog, showReinvestPrompt;
 
 void main() {
   runApp(const MyApp());
@@ -60,6 +60,7 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
 
   // Total profit amount withdrawn till date (for demo, can be wired to real data)
   double totalProfitWithdrawnTillDate = 0.0;
+  double totalReinvestedAmount = 0.0;
 
   void _showWithdrawDialog() {
     WithdrawDialog.show(
@@ -67,25 +68,28 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
       revenueSharePercent: revenueSharePercent,
       totalIncomeTillDate: totalIncomeTillDate,
       totalProfitWithdrawnTillDate: totalProfitWithdrawnTillDate,
+      totalReinvestedAmount: totalReinvestedAmount,
       equityValue: equityValue,
       onWithdraw: (amount) {
         setState(() => totalProfitWithdrawnTillDate += amount);
       },
       onReinvest: (amount) {
         setState(() {
-          totalProfitWithdrawnTillDate =
-              (totalProfitWithdrawnTillDate - amount).clamp(0.0, double.infinity);
+          totalReinvestedAmount += amount;
         });
       },
     );
   }
 
   void _reinvestAll() {
-    // Reinvest is only enabled when nothing has been withdrawn (totalProfitWithdrawnTillDate <= 0)
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Your income is reinvested.'),
+          backgroundColor: AppColors.cardBackground,
+          content: Text(
+            'Your income has already been withdrawn or reinvested.',
+            style: TextStyle(color: Colors.black),
+          ),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -173,8 +177,9 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                                       isMobile
                                           ? 'Withdraw'
                                           : 'Withdraw to Bank Account',
-                                      style:
-                                          TextStyle(fontSize: isMobile ? 15 : 16),
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 15 : 16,
+                                      ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       padding: EdgeInsets.symmetric(
@@ -187,17 +192,34 @@ class _InvestorDashboardState extends State<InvestorDashboard> {
                                 SizedBox(width: isMobile ? 12 : 16),
                                 Expanded(
                                   child: ElevatedButton.icon(
-                                    onPressed: totalProfitWithdrawnTillDate <= 0
-                                        ? _reinvestAll
-                                        : null,
+                                    onPressed: () {
+                                      final withdrawable =
+                                          (totalIncomeTillDate -
+                                                  totalProfitWithdrawnTillDate)
+                                              .clamp(0.0, double.infinity);
+                                      if (withdrawable > 0) {
+                                        showReinvestPrompt(
+                                          context,
+                                          maxAmount: withdrawable,
+                                          onReinvest: (amount) {
+                                            setState(() {
+                                              totalReinvestedAmount += amount;
+                                            });
+                                          },
+                                        );
+                                      } else {
+                                        _reinvestAll();
+                                      }
+                                    },
                                     icon: Icon(
                                       Icons.replay,
                                       size: isMobile ? 18 : 20,
                                     ),
                                     label: Text(
                                       'Reinvest',
-                                      style:
-                                          TextStyle(fontSize: isMobile ? 15 : 16),
+                                      style: TextStyle(
+                                        fontSize: isMobile ? 15 : 16,
+                                      ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       padding: EdgeInsets.symmetric(

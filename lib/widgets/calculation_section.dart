@@ -710,9 +710,9 @@ class _CalculationSectionState extends State<CalculationSection> {
                       color: AppColors.white,
                       fontWeight: FontWeight.w600,
                     )
-                : Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.white.withValues(alpha: 0.9),
-                  ),
+                  : Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.white.withValues(alpha: 0.9),
+                    ),
               maxLines: 2, // Allow title to take up to 2 lines
               overflow: TextOverflow.ellipsis,
             ),
